@@ -4,7 +4,7 @@
  *
  * @section License
  *
- * This file is a part of my huffman coderr.
+ * This file is a part of my huffman coder.
  * Copyright (C) 2015 Robert B. Colton
  *
  * This program is free software: you can redistribute it and/or modify it under 
