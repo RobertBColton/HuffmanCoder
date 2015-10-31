@@ -1,10 +1,10 @@
 /**
  * @file main.cpp
- * @brief Entry point for huffman encoder and decoder.
+ * @brief Entry point for Huffman encoder and decoder.
  *
  * @section License
  *
- * This file is a part of my huffman coder.
+ * This file is a part of my Huffman coder.
  * Copyright (C) 2015 Robert B. Colton
  *
  * This program is free software: you can redistribute it and/or modify it under 
