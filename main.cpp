@@ -14,15 +14,18 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT 
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. 
+ * See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License 
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  **/
 
 #include <iostream>
+#include <iomanip>
 #include <algorithm>
 #include <unordered_map>
+#include <stack>
 #include <string>
 
 struct Code {
@@ -49,10 +52,34 @@ struct CodeComparator
   }
 };
 
+void printTree(Code const* node, int width) {
+  std::stack<Code const*> children;
+  std::stack<int> widths;
+  while (!children.empty() || node) {
+    if (node) {
+      children.push(node);
+      widths.push(width);
+      node = node->left_;
+      width += 2;
+    } else {
+      node = children.top();
+      children.pop();
+      char symbol = node->symbol_;
+      if (symbol == '\n') { symbol = '*'; }
+      else if (symbol == 0) { symbol = '<'; }
+      width = widths.top();
+      widths.pop();
+      std::cout << std::setw(width) << symbol << '\n';
+      node = node->right_;
+      width += 2;
+    }
+  }
+}
+
 int main() {
   // display copyright and program details
   std::cout << "Huffman Coder by Robert B. Colton, Copyright (C) 2015\n" <<
-    "Please enter the text to be encoded followed by the end of file signal:"
+    "Enter the text to be encoded followed by the end of file signal:"
     << std::endl;
   // enter the text to be encoded and subsequently decoded
   std::string plainText;
@@ -70,7 +97,7 @@ int main() {
   for (size_t i = 0; i < plainText.length(); ++i) {
     auto it = symbols.begin();
     // increment this symbol's frequency if we've encountered it before
-    for (; it != symbols.end(); it++) {
+    for (; it != symbols.end(); ++it) {
       Code *const node = *it;
       if (node->symbol_ == plainText[i]) {
         node->frequency_++;
@@ -89,36 +116,47 @@ int main() {
 
   // build the tree until we reach the root node whose left child is the most
   // frequent symbol
-  Code const* root = symbols.back();
-  symbols.pop_back();
-  while (!symbols.empty()) {
+  while (symbols.size() > 1) {
     Code *const node = new Code();
     node->left_ = symbols.back();
     symbols.pop_back();
-    node->right_ = root;
-    root = node;
+    node->right_ = symbols.back();
+    symbols.pop_back();
+    node->frequency_ = node->left_->frequency_ + node->right_->frequency_;
+    auto it = symbols.rbegin();
+    while (it != symbols.rend()) {
+      if ((*it)->frequency_ > node->frequency_) break;
+      it++;
+    }
+    symbols.insert(it.base(), node);
   }
+  Code const* root = symbols.back();
+  symbols.pop_back();
+
   // traverse the tree and cache all of the prefix codes
   std::unordered_map<char, std::string> prefix;
   std::string code = "";
+  
+  printTree(root, 2);
+
+  std::stack<Code const*> children;
+  std::stack<std::string> path;
   Code const* node = root;
-  while (true) {
-    if (node->left_ != NULL) {
-      prefix[node->left_->symbol_] = code + "0";
+  while (!children.empty() || node) {
+    if (node) {
+      children.push(node);
+      path.push(code);
+      node = node->left_;
+      code += '0';
     } else {
-      prefix[node->symbol_] = "0";
-      break;
-    }
-    if (node->right_ != NULL) {
-      code += "1";
-      if (node->right_->left_ != NULL) {
-        node = node->right_;
-      } else {
-        prefix[node->right_->symbol_] = code;
-        break;
-      }
-    } else {
-      break; // error, this shouldn't occur
+      node = children.top();
+      children.pop();
+      prefix[node->symbol_] = code.substr(0, code.length() - 1);
+      code = path.top();
+      path.pop();
+      std::cout << node->symbol_ << ' ' << prefix[node->symbol_] << '\n';
+      node = node->right_;
+      code += '1';
     }
   }
 
@@ -130,25 +168,18 @@ int main() {
 
   std::cout << "Encoded:\n" << cipherText << '\n';
 
+  // walk the tree while iterating the huffman encoded string
   plainText = "";
   node = root;
-  // walk the tree while iterating the huffman encoded string
   for (size_t i = 0; i < cipherText.length(); ++i) {
-    // when we've reached a 0 we have a decoded symbol
+    if (node->left_ == NULL && node->right_ == NULL) {
+      plainText += node->symbol_;
+      node = root;
+    }
     if (cipherText[i] == '0') {
-      if (node->left_ != NULL) {
-        plainText += node->left_->symbol_;
-        node = root;
-      } else {
-        plainText += node->symbol_;
-      }
+      node = node->left_;
     } else {
-      if (node->right_->left_ != NULL) { // go deeper
-        node = node->right_;
-      } else { // we've hit the bottom of the tree
-        plainText += node->right_->symbol_;
-        node = root;
-      }
+      node = node->right_;
     }
   }
   // show the decoded string
