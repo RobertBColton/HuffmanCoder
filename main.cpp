@@ -52,15 +52,16 @@ struct CodeComparator
   }
 };
 
-void printTree(Code const* node, int width) {
+void printTree(Code const* node, int spacing) {
   std::stack<Code const*> children;
   std::stack<int> widths;
+  int width = spacing;
   while (!children.empty() || node) {
     if (node) {
       children.push(node);
       widths.push(width);
       node = node->left_;
-      width += 2;
+      width += spacing;
     } else {
       node = children.top();
       children.pop();
@@ -71,7 +72,7 @@ void printTree(Code const* node, int width) {
       widths.pop();
       std::cout << std::setw(width) << symbol << '\n';
       node = node->right_;
-      width += 2;
+      width += spacing;
     }
   }
 }
@@ -151,10 +152,13 @@ int main() {
     } else {
       node = children.top();
       children.pop();
-      prefix[node->symbol_] = code.substr(0, code.length() - 1);
+      if (node->left_ == NULL && node->right_ == NULL) {
+        prefix[node->symbol_] = code.substr(0, code.length() - 1);
+        std::cout << node->symbol_ << ' ' << code.substr(0, code.length() - 1) 
+          << '\n';
+      }
       code = path.top();
       path.pop();
-      std::cout << node->symbol_ << ' ' << prefix[node->symbol_] << '\n';
       node = node->right_;
       code += '1';
     }
@@ -184,8 +188,8 @@ int main() {
   }
   // show the decoded string
   std::cout << "Decoded:\n" << plainText << '\n';
-  std::cout << "Compression: %" << ((float)cipherText.length() / 
-    plainText.length() * 8) << '\n';
+  std::cout << "Compression: %" << (cipherText.length() / 
+    (double)((plainText.length() + 1) * 8)) * 100 << '\n';
   // give the user a chance to read it and then return control to the OS
   std::cout << "Press ENTER to continue." << std::endl;
   std::cin.sync();
