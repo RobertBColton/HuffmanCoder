@@ -7,17 +7,17 @@
  * This file is a part of my Huffman coder.
  * Copyright (C) 2015 Robert B. Colton
  *
- * This program is free software: you can redistribute it and/or modify it under 
- * the terms of the GNU General Public License as published by the Free Software 
- * Foundation, either version 3 of the License, or (at your option) any later 
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
  * version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT 
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
- * FOR A PARTICULAR PURPOSE. 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.
  * See the GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
+ * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  **/
 
@@ -35,9 +35,9 @@ public:
   Code const* left_;
   Code const* right_;
 
-  Code(): symbol_(0), frequency_(0), left_(NULL), 
+  Code(): symbol_(0), frequency_(0), left_(NULL),
     right_(NULL) { }
-  Code(const char symbol): symbol_(symbol), frequency_(0), left_(NULL), 
+  Code(const char symbol): symbol_(symbol), frequency_(0), left_(NULL),
     right_(NULL) { }
   ~Code() {
     delete left_;
@@ -112,7 +112,7 @@ int main() {
   }
   // sort the symbols by frequency and show the most and least frequency symbol
   std::sort(symbols.begin(), symbols.end(), CodeComparator());
-  std::cout << "Symbols: " << symbols.front()->symbol_ << " " << 
+  std::cout << "Symbols: " << symbols.front()->symbol_ << " " <<
     symbols.back()->symbol_ << '\n';
 
   // build the tree until we reach the root node whose left child is the most
@@ -137,7 +137,7 @@ int main() {
   // traverse the tree and cache all of the prefix codes
   std::unordered_map<char, std::string> prefix;
   std::string code = "";
-  
+
   printTree(root, 2);
 
   std::stack<Code const*> children;
@@ -154,8 +154,8 @@ int main() {
       children.pop();
       if (node->left_ == NULL && node->right_ == NULL) {
         prefix[node->symbol_] = code.substr(0, code.length() - 1);
-        std::cout << node->symbol_ << ' ' << code.substr(0, code.length() - 1) 
-          << '\n';
+        std::cout << (node->symbol_ == '\n' ? '*' : node->symbol_) << ' ' <<
+          code.substr(0, code.length() - 1) << '\n';
       }
       code = path.top();
       path.pop();
@@ -188,8 +188,8 @@ int main() {
   }
   // show the decoded string
   std::cout << "Decoded:\n" << plainText << '\n';
-  std::cout << "Compression: %" << (cipherText.length() / 
-    (double)((plainText.length() + 1) * 8)) * 100 << '\n';
+  std::cout << "Compression: " << ((double)cipherText.length() /
+    ((plainText.length() + 1) * 8)) * 100 << "%\n";
   // give the user a chance to read it and then return control to the OS
   std::cout << "Press ENTER to continue." << std::endl;
   std::cin.sync();
